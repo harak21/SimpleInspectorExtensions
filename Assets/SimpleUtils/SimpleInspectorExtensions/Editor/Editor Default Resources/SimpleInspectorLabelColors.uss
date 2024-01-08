@@ -1,0 +1,132 @@
+:root 
+{
+    
+}
+
+.label-color-white Label{
+    color: white;
+}
+
+.label-color-wheat Label{
+    color: wheat;
+}
+
+.label-color-whitesmoke Label{
+    color: whitesmoke;
+}
+
+.label-color-black Label{
+    color: black;
+}
+
+.label-color-bisque Label{
+    color: bisque;
+}
+
+.label-color-beige Label{
+    color: beige;
+}
+
+.label-color-blanchedalmond Label{
+    color: blanchedalmond;
+}
+
+.label-color-blueviolet Label{
+    color: blueviolet;
+}
+
+.label-color-brown Label{
+    color: brown;
+}
+
+.label-color-burlywood Label{
+    color: burlywood;
+}
+
+.label-color-gray Label{
+    color: gray;
+}
+
+.label-color-gainsboro Label{
+    color: gainsboro;
+}
+
+.label-color-ghostwhite Label{
+    color: ghostwhite;
+}
+
+.label-color-gold Label{
+    color: gold;
+}
+
+.label-color-goldenrod Label{
+    color: goldenrod;
+}
+
+.label-color-greenyellow Label{
+    color: greenyellow;
+}
+
+.label-color-red Label{
+    color: red;
+}
+
+.label-color-rebeccapurple Label{
+    color: rebeccapurple;
+}
+
+.label-color-rosybrown Label{
+    color: rosybrown;
+}
+
+.label-color-royalblue Label{
+    color: royalblue;
+}
+
+.label-color-palegoldenrod Label{
+    color: palegoldenrod;
+}
+
+.label-color-palegreen Label{
+    color: palegreen;
+}
+
+.label-color-paleturquoise Label{
+    color: paleturquoise;
+}
+
+.label-color-palevioletred Label{
+    color: palevioletred;
+}
+
+.label-color-papayawhip Label{
+    color: papayawhip;
+}
+
+.label-color-pink Label{
+    color: pink;
+}
+
+.label-color-orange Label{
+    color: orange;
+}
+
+.label-color-yellow Label{
+    color: yellow;
+}
+
+.label-color-green Label{
+    color: green;
+}
+
+.label-color-blue Label{
+    color: blue;
+}
+
+.label-color-indigo Label{
+    color: indigo;
+}
+
+.label-color-violet Label{
+    color: violet;
+}

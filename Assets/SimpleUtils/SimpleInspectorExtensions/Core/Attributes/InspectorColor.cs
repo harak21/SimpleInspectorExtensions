@@ -1,0 +1,39 @@
+namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes
+{
+    public enum InspectorColor
+    {
+        Clear,
+        White,
+        Wheat,
+        Whitesmoke,
+        Black,
+        Bisque,
+        Beige,
+        Blanchedalmond,
+        Blueviolet,
+        Brown,
+        Burlywood,
+        Gray,
+        Gainsboro,
+        Ghostwhite,
+        Gold,
+        Goldenrod,
+        Greenyellow,
+        Red,
+        Rebeccapurple,
+        Rosybrown,
+        Royalblue,
+        Palegoldenrod,
+        Palegreen,
+        Paleturquoise,
+        Palevioletred,
+        Papayawhip,
+        Pink,
+        Orange,
+        Yellow,
+        Green,
+        Blue,
+        Indigo,
+        Violet
+    }
+}

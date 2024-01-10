@@ -1,0 +1,8 @@
+:root 
+{
+    
+}
+
+Label{
+    color : black;
+}

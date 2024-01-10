@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Diagnostics;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttributes
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [Conditional("UNITY_EDITOR")]
     public class DropdownAttribute : BaseExtensionAttribute
     {
         private readonly string _choicesSource;

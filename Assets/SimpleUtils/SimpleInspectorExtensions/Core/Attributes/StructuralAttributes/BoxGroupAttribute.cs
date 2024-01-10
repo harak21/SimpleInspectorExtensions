@@ -1,15 +1,20 @@
+using System;
+using System.Diagnostics;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttributes
 {
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [Conditional("UNITY_EDITOR")]
     public class BoxGroupAttribute : BaseExtensionAttribute
     {
         private readonly InspectorColor _labelColor;
-        private readonly int _margin;
-        private readonly int _padding;
-        private readonly int _borderWidth;
+        private readonly Vector4 _margin;
+        private readonly Vector4 _padding;
+        private readonly Vector4 _borderWidth;
         private readonly InspectorColor _borderColor;
         private readonly int _borderRadius;
         private readonly InspectorColor _backgroundColor;
@@ -26,7 +31,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
         }
 
         public BoxGroupAttribute(string name, InspectorColor backgroundColor, InspectorColor labelColor) : 
-            this(name, backgroundColor, labelColor, 0)
+            this(name, backgroundColor, labelColor, new Vector4())
         {
             _labelColor = labelColor;
         }
@@ -38,14 +43,36 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
             int padding = 0,
             int borderWidth = 0,
             InspectorColor borderColor = InspectorColor.Clear,
+            int borderRadius = 0) : this(name, backgroundColor, labelColor, borderColor, borderRadius)
+        {
+            _margin = new Vector4(margin, margin, margin, margin);
+            _padding = new Vector4(padding, padding, padding, padding);
+            _borderWidth = new Vector4(borderWidth, borderWidth, borderWidth, borderWidth);
+        }
+
+        public BoxGroupAttribute(string name, 
+            InspectorColor backgroundColor = InspectorColor.Clear, 
+            InspectorColor labelColor = InspectorColor.Black,
+            Vector4 margin = default,
+            Vector4 padding = default,
+            Vector4 borderWidth = default,
+            InspectorColor borderColor = InspectorColor.Clear,
+            int borderRadius = 0) : this(name, backgroundColor, labelColor, borderColor, borderRadius)
+        {
+            _margin = margin == default ? new Vector4(6,1,3,3) : margin;
+            _padding = padding == default ? new Vector4(5,5,3,3) : padding;
+            _borderWidth = borderWidth;
+        }
+
+        public BoxGroupAttribute(string name, 
+            InspectorColor backgroundColor = InspectorColor.Clear, 
+            InspectorColor labelColor = InspectorColor.Black,
+            InspectorColor borderColor = InspectorColor.Clear,
             int borderRadius = 0)
         {
             _name = name;
             _backgroundColor = backgroundColor;
             _labelColor = labelColor;
-            _margin = margin;
-            _padding = padding;
-            _borderWidth = borderWidth;
             _borderColor = borderColor;
             _borderRadius = borderRadius;
         }
@@ -54,6 +81,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
         {
             var group = rootElement.Q<Box>(_name);
 
+            bool hasLabel = !string.IsNullOrEmpty(_name);
+
             if (group == null)
             {
                 group = new Box
@@ -61,18 +90,18 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
                     name = _name,
                     style =
                     {
-                        marginTop = _margin,
-                        marginBottom = _margin,
-                        marginLeft = _margin,
-                        marginRight = _margin,
-                        paddingTop = _padding + 20,
-                        paddingBottom = _padding,
-                        paddingLeft = _padding,
-                        paddingRight = _padding,
-                        borderTopWidth = _borderWidth,
-                        borderBottomWidth = _borderWidth,
-                        borderLeftWidth = _borderWidth,
-                        borderRightWidth = _borderWidth,
+                        marginTop = _margin.x,
+                        marginBottom = _margin.y,
+                        marginLeft = _margin.z,
+                        marginRight = _margin.w,
+                        paddingTop = _padding.x + (hasLabel ? 20 : 0),
+                        paddingBottom = _padding.y,
+                        paddingLeft = _padding.z,
+                        paddingRight = _padding.w,
+                        borderTopWidth = _borderWidth.x,
+                        borderBottomWidth = _borderWidth.y,
+                        borderLeftWidth = _borderWidth.z,
+                        borderRightWidth = _borderWidth.w,
                         borderTopColor = _borderColor.Color(),
                         borderBottomColor = _borderColor.Color(),
                         borderLeftColor = _borderColor.Color(),
@@ -84,22 +113,26 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
                         backgroundColor = _backgroundColor.Color()
                     }
                 };
-                var label = new Label(_name)
-                {
-                    style =
-                    {
-                        color = _labelColor.Color(),
-                        position = new StyleEnum<Position>(Position.Absolute),
-                        top = 2,
-                        left = 2
-                    }
-                };
                 
-                group.Add(label);
+                if (hasLabel)
+                {
+                    var label = new Label(_name)
+                    {
+                        style =
+                        {
+                            color = _labelColor.Color(),
+                            position = new StyleEnum<Position>(Position.Absolute),
+                            top = 2,
+                            left = 2
+                        }
+                    };
+                    group.Add(label);
+                }
+                
                 rootElement.Add(group);
             }
             
-            group.Add(memberElement);
+            group.Add(memberElement.parent != rootElement ? memberElement.parent : memberElement);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
@@ -6,6 +7,7 @@ using Object = UnityEngine.Object;
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttributes
 {
     [AttributeUsage(AttributeTargets.Method)]
+    [Conditional("UNITY_EDITOR")]
     public class ButtonAttribute : BaseExtensionAttribute
     {
         private readonly string _name;

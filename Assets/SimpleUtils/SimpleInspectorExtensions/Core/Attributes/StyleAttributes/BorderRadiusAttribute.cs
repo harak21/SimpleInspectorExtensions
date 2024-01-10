@@ -1,23 +1,30 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Diagnostics;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
 {
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [Conditional("UNITY_EDITOR")]
     public class BorderRadiusAttribute : BaseExtensionAttribute
     {
         private readonly int _radius;
+        private readonly bool _parent;
 
-        public BorderRadiusAttribute(int radius)
+        public BorderRadiusAttribute(int radius, bool parent = false)
         {
             _radius = radius;
+            _parent = parent;
         }
 
         public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
         {
-            memberElement.style.borderBottomLeftRadius = _radius;
-            memberElement.style.borderBottomRightRadius = _radius;
-            memberElement.style.borderTopLeftRadius = _radius;
-            memberElement.style.borderTopRightRadius = _radius;
+            var targetElement = _parent ? memberElement.parent : memberElement;
+            targetElement.style.borderBottomLeftRadius = _radius;
+            targetElement.style.borderBottomRightRadius = _radius;
+            targetElement.style.borderTopLeftRadius = _radius;
+            targetElement.style.borderTopRightRadius = _radius;
         }
     }
 }

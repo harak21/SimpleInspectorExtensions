@@ -1,10 +1,14 @@
-﻿using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
+﻿using System;
+using System.Diagnostics;
+using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttributes
 {
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [Conditional("UNITY_EDITOR")]
     public class HideIfAttribute : BaseExtensionAttribute
     {
         private readonly string _condition;
@@ -23,7 +27,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
                 ? new StyleEnum<DisplayStyle>(DisplayStyle.None) 
                 : new StyleEnum<DisplayStyle>(DisplayStyle.Flex);
             
-            (rootElement.Q<PropertyField>(_condition)).RegisterValueChangeCallback(
+            (rootElement.Q<PropertyField>(_condition))?.RegisterValueChangeCallback(
                 evt =>
                 {
                     memberElement.style.display = evt.changedProperty.boolValue

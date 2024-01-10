@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Utility
 {
@@ -52,6 +54,12 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Utility
             {
                 propertyInfo.SetValue(target, value);
             }
+
+            if (target is Object o)
+            {
+                EditorUtility.SetDirty(o);
+            }
+            
         }
 
         public static void InvokeMethod(object target, string methodName)

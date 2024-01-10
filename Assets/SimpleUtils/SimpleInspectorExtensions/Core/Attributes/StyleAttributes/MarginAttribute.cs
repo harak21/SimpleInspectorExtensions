@@ -1,28 +1,36 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Diagnostics;
+using UnityEngine;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
 {
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [Conditional("UNITY_EDITOR")]
     public class MarginAttribute : BaseExtensionAttribute
     {
+        private readonly bool _parent;
         private readonly Vector4 _margin;
         
-        public MarginAttribute(int margin)
+        public MarginAttribute(int margin, bool parent = false) 
+            : this(margin,margin,margin,margin, parent)
         {
-            _margin = new Vector4(margin, margin, margin, margin);
         }
 
-        public MarginAttribute(int marginTop, int marginBottom, int marginLeft, int marginRight)
+        public MarginAttribute(int marginTop, int marginBottom, int marginLeft, int marginRight, bool parent = false)
         {
+            _parent = parent;
             _margin = new Vector4(marginTop, marginBottom, marginLeft, marginRight);
         }
         
         public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
         {
-            memberElement.style.marginTop = _margin.x;
-            memberElement.style.marginBottom = _margin.y;
-            memberElement.style.marginLeft = _margin.z;
-            memberElement.style.marginRight = _margin.w;
+            var targetElement = _parent ? memberElement.parent : memberElement;
+            targetElement.style.marginTop = _margin.x;
+            targetElement.style.marginBottom = _margin.y;
+            targetElement.style.marginLeft = _margin.z;
+            targetElement.style.marginRight = _margin.w;
         }
     }
 }

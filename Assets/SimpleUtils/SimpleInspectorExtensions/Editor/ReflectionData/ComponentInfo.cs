@@ -6,11 +6,13 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.ReflectionData
     {
         public readonly Type Type;
         public readonly MemberData[] MemberData;
+        public readonly AttributeData[] AttributesData; 
 
-        public ComponentInfo(Type type, MemberData[] memberData)
+        public ComponentInfo(Type type, MemberData[] memberData, AttributeData[] attributesData)
         {
             Type = type;
             MemberData = memberData;
+            AttributesData = attributesData;
         }
     }
 }

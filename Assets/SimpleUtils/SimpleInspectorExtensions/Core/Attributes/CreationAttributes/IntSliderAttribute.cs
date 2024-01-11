@@ -10,7 +10,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class IntSliderAttribute : BaseExtensionAttribute
+    public class IntSliderAttribute : CreationAttribute
     {
         private readonly int _minValue;
         private readonly int _maxValue;

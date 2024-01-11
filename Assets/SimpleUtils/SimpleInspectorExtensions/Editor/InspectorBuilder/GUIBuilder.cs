@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttributes;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
@@ -17,7 +16,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
     public static class GUIBuilder
     {
         private static Dictionary<Type, ComponentInfo> _cashedTypes = new();
-        
+
         internal static void AddInspectedType(ComponentInfo componentInfo)
         {
             _cashedTypes.Add(componentInfo.Type, componentInfo);
@@ -28,13 +27,74 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
             var componentInfo = _cashedTypes[serializedObject.targetObject.GetType()];
 
             var root = new VisualElement();
-            
-            CreateDefaultInspector(serializedObject, root);
-            CreateCustomInspector(componentInfo, root, serializedObject.targetObject);
+            root.AddToClassList("rootElement");
+
+            CreateElements(serializedObject, root, componentInfo);
 
             root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(
                 AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("SimpleInspectorLabelColors")[0])));
+            root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(
+                AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("SimpleInspectorDefaultStyleSheet")[0])));
             return root;
+        }
+
+        private static void CreateElements(SerializedObject serializedObject, VisualElement root,
+            ComponentInfo componentInfo)
+        {
+            CreateDefaultInspector(serializedObject, root);
+            CreateCustomInspector(componentInfo, root, serializedObject.targetObject, serializedObject);
+        }
+
+        private static void CreateCustomInspector(ComponentInfo componentInfo, VisualElement root, Object target,
+            SerializedObject serializedObject)
+        {
+            var members = ReflectionUtility.GetMembers(target);
+
+            foreach (var attributeData in componentInfo.AttributesData)
+            {
+                if (attributeData.Attribute is ButtonAttribute)
+                {
+                    CreateButton(attributeData.MemberInfo.Name, root);
+                }
+
+                var element = root.Q<VisualElement>(attributeData.MemberInfo.Name);
+                if (element == null)
+                {
+                    var type = ((FieldInfo)attributeData.MemberInfo).FieldType;
+                    element = CreateElementView(type, attributeData.MemberInfo.Name, target);
+                    element.name = attributeData.MemberInfo.Name;
+                    var index = members.IndexOf(attributeData.MemberInfo);
+                    bool hasOrder = true;
+                    while (serializedObject.FindProperty(members[index].Name) == null)
+                    {
+                        if (index >= members.Count - 1)
+                        {
+                            hasOrder = false;
+                            break;
+                        }
+
+                        index++;
+                    }
+
+                    if (hasOrder)
+                    {
+                        var order = root.IndexOf(root.Q<VisualElement>(members[index].Name));
+                        if (order < root.childCount && order != -1)
+                        {
+                            root.Insert(order, element);
+                        }
+                        else
+                        {
+                            root.Add(element);
+                        }
+                    }
+                    else
+                    {
+                        root.Add(element);
+                    }
+                }
+                attributeData.Attribute.Execute(root, target, element);
+            }
         }
 
         private static void CreateDefaultInspector(SerializedObject serializedObject, VisualElement root)
@@ -49,166 +109,130 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
                 root.Add(propertyField);
             }
         }
-        private static void CreateCustomInspector(ComponentInfo componentInfo, VisualElement root, Object target)
-        {
-            foreach (var member in componentInfo.MemberData)
-            {
-                var memberInfo = member.MemberInfo;
-                foreach (var attribute in member.Attributes)
-                {
-                    if (attribute is ButtonAttribute)
-                    {
-                        CreateButton(member, root);
-                    }
-                    
-                    var element = root.Q<VisualElement>(memberInfo.Name);
-                    if (element == null)
-                    {
-                        element = CreateElementView(member, root, target);
-                        element.name = memberInfo.Name;
-                        root.Add(element);
-                    }
-                    
-                    attribute.Execute(root, target, element);
-                }
-            }
-        }
 
-        private static void CreateButton(MemberData memberData, VisualElement root)
+        private static void CreateButton(string name, VisualElement root)
         {
             root.Add(new Button()
             {
-                name = memberData.MemberInfo.Name
+                name = name
             });
         }
 
-        private static VisualElement CreateElementView(MemberData member, VisualElement root, Object target)
+        private static VisualElement CreateElementView(Type type, string fieldName, Object target)
         {
-            var type = ((FieldInfo)member.MemberInfo).FieldType;
-            var name = member.MemberInfo.Name;
-
-            //if (type.IsGenericType)
-            //{
-            //    //if (type.IsArray)
-            //    {
-            //        var source = ReflectionUtility.GetMemberValue<List<object>>(target, name);
-            //        return ElementsFactory.CreateListView(member, target, source);
-            //    }
-            //}
-
             if (type == typeof(int))
             {
-               return ElementsFactory.CreateField<IntegerField, int>(member, target);
+                return ElementsFactory.CreateField<IntegerField, int>(fieldName, target);
             }
 
             if (type == typeof(long))
             {
-                return ElementsFactory.CreateField<LongField, long>(member, target);
+                return ElementsFactory.CreateField<LongField, long>(fieldName, target);
             }
 
             if (type == typeof(bool))
             {
-                return ElementsFactory.CreateField<Toggle, bool>(member, target);
+                return ElementsFactory.CreateField<Toggle, bool>(fieldName, target);
             }
 
             if (type == typeof(double))
             {
-                return ElementsFactory.CreateField<DoubleField, double>(member, target);
+                return ElementsFactory.CreateField<DoubleField, double>(fieldName, target);
             }
 
             if (type == typeof(float))
             {
-                return ElementsFactory.CreateField<FloatField, float>(member, target);
+                return ElementsFactory.CreateField<FloatField, float>(fieldName, target);
             }
 
             if (type == typeof(string))
             {
-                return ElementsFactory.CreateField<TextField, string>(member, target);
+                return ElementsFactory.CreateField<TextField, string>(fieldName, target);
             }
 
             if (type == typeof(Color))
             {
-                return ElementsFactory.CreateField<ColorField, Color>(member, target);
+                return ElementsFactory.CreateField<ColorField, Color>(fieldName, target);
             }
 
             if (type == typeof(LayerMask))
             {
-                return ElementsFactory.CreateLayerMask(member, target);
+                return ElementsFactory.CreateLayerMask(fieldName, target);
             }
 
             if (type.BaseType == typeof(Enum))
             {
                 //if (type.IsDefined(typeof (FlagsAttribute), false))
                 {
-                    return ElementsFactory.CreateEnumField(member, target);
+                    return ElementsFactory.CreateEnumField(fieldName, target);
                 }
             }
 
             if (type == typeof(Vector2))
             {
-                return ElementsFactory.CreateField<Vector2Field, Vector2>(member, target);
+                return ElementsFactory.CreateField<Vector2Field, Vector2>(fieldName, target);
             }
 
             if (type == typeof(Vector3))
             {
-                return ElementsFactory.CreateField<Vector3Field, Vector3>(member, target);
+                return ElementsFactory.CreateField<Vector3Field, Vector3>(fieldName, target);
             }
 
             if (type == typeof(Vector4))
             {
-                return ElementsFactory.CreateField<Vector4Field, Vector4>(member, target);
+                return ElementsFactory.CreateField<Vector4Field, Vector4>(fieldName, target);
             }
-            
+
             if (type == typeof(Rect))
             {
-                return ElementsFactory.CreateField<RectField, Rect>(member, target);
+                return ElementsFactory.CreateField<RectField, Rect>(fieldName, target);
             }
 
             if (type == typeof(char))
             {
-                return ElementsFactory.CreateCharField(member, target);
+                return ElementsFactory.CreateCharField(fieldName, target);
             }
 
             if (type == typeof(AnimationCurve))
             {
-                return ElementsFactory.CreateField<CurveField, AnimationCurve>(member, target);
+                return ElementsFactory.CreateField<CurveField, AnimationCurve>(fieldName, target);
             }
 
             if (type == typeof(Bounds))
             {
-                return ElementsFactory.CreateField<BoundsField, Bounds>(member, target);
+                return ElementsFactory.CreateField<BoundsField, Bounds>(fieldName, target);
             }
 
             if (type == typeof(Gradient))
             {
-                return ElementsFactory.CreateField<GradientField, Gradient>(member, target);
+                return ElementsFactory.CreateField<GradientField, Gradient>(fieldName, target);
             }
 
             if (type == typeof(Vector2Int))
             {
-                return ElementsFactory.CreateField<Vector2IntField, Vector2Int>(member, target);
+                return ElementsFactory.CreateField<Vector2IntField, Vector2Int>(fieldName, target);
             }
 
             if (type == typeof(Vector3Int))
             {
-                return ElementsFactory.CreateField<Vector3IntField, Vector3Int>(member, target);
+                return ElementsFactory.CreateField<Vector3IntField, Vector3Int>(fieldName, target);
             }
 
             if (type == typeof(RectInt))
             {
-                return ElementsFactory.CreateField<RectIntField, RectInt>(member, target);
+                return ElementsFactory.CreateField<RectIntField, RectInt>(fieldName, target);
             }
 
             if (type == typeof(BoundsInt))
             {
-                return ElementsFactory.CreateField<BoundsIntField, BoundsInt>(member, target);
+                return ElementsFactory.CreateField<BoundsIntField, BoundsInt>(fieldName, target);
             }
 
             if (typeof(Object).IsAssignableFrom(type))
             {
-                return ElementsFactory.CreateObjectField(member, target);
+                return ElementsFactory.CreateObjectField(fieldName, type, target);
             }
-            
+
             var ve = new VisualElement()
             {
                 style =
@@ -235,13 +259,15 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
                     justifyContent = new StyleEnum<Justify>(Justify.Center)
                 }
             };
-            
-            ve.Add(new Label($"Simple inspector doesn't support {type} types"){
+
+            ve.Add(new Label($"Simple inspector doesn't support {type} types")
+            {
                 style =
                 {
                     color = Color.white,
-                }});
-            
+                }
+            });
+
             return ve;
         }
     }

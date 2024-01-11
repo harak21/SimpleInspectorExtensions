@@ -7,7 +7,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class FoldoutAttribute : BaseExtensionAttribute
+    public class FoldoutAttribute : StructuralAttribute
     {
         private readonly string _name;
 
@@ -19,8 +19,6 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
         public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
         {
             var group = rootElement.Q<Foldout>(_name);
-            
-            bool hasLabel = !string.IsNullOrEmpty(_name);
 
             if (group == null)
             {
@@ -30,7 +28,9 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
                 };
 
                 group.text = _name;
-                rootElement.Add(group);
+                var index= memberElement.parent.IndexOf(memberElement);
+                memberElement.parent.Insert(index, group);
+                //rootElement.Add(group);
             }
 
             group.Add(memberElement.parent != rootElement ? memberElement.parent : memberElement);

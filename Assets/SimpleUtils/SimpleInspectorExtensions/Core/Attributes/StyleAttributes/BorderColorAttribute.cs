@@ -8,7 +8,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class BorderColorAttribute : BaseExtensionAttribute
+    public class BorderColorAttribute : StyleExtensionAttribute
     {
         private readonly InspectorColor _inspectorColor;
         private readonly bool _parent;

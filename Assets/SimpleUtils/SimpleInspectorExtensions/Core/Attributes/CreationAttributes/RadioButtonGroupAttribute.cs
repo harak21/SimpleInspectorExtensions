@@ -11,7 +11,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class RadioButtonGroupAttribute : BaseExtensionAttribute
+    public class RadioButtonGroupAttribute : CreationAttribute
     {
         private readonly string _name;
 

@@ -8,7 +8,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class StyleSheetAttribute : BaseExtensionAttribute
+    public class StyleSheetAttribute : StyleExtensionAttribute
     {
         private readonly string _styleSheetName;
         private readonly bool _parent;

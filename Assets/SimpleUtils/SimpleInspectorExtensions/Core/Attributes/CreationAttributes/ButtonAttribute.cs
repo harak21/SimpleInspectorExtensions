@@ -8,7 +8,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
 {
     [AttributeUsage(AttributeTargets.Method)]
     [Conditional("UNITY_EDITOR")]
-    public class ButtonAttribute : BaseExtensionAttribute
+    public class ButtonAttribute : CreationAttribute
     {
         private readonly string _name;
 

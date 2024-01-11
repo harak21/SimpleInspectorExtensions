@@ -8,6 +8,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes
     [Conditional("UNITY_EDITOR")]
     public abstract class BaseExtensionAttribute : Attribute
     {
+        public abstract int Order { get; }
         public abstract void Execute(VisualElement rootElement, Object target, VisualElement memberElement);
     }
 }

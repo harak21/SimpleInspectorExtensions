@@ -12,7 +12,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
     
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class ProgressBarAttribute : BaseExtensionAttribute
+    public class ProgressBarAttribute : CreationAttribute
     {
         private readonly float _min;
         private readonly float _max;
@@ -55,7 +55,10 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
                 ReflectionUtility.SetMemberValue(target, value, memberElement.name);
                 progressBar.SetValueWithoutNotify(value);
             });
-            progressBar.style.minWidth = new StyleLength(new Length(80, LengthUnit.Percent));
+            //floatField.style.maxWidth = 200;
+            //floatField.style.minWidth = 200;
+            progressBar.style.overflow = new StyleEnum<Overflow>(Overflow.Hidden);
+            progressBar.style.flexGrow = 1;
 
             //floatField.label = "";
             ve.Add(progressBar);

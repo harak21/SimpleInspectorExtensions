@@ -8,7 +8,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class PaddingAttribute : BaseExtensionAttribute
+    public class PaddingAttribute : StyleExtensionAttribute
     {
         private readonly bool _parent;
         private readonly Vector4 _padding;

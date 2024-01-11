@@ -8,7 +8,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class MarginAttribute : BaseExtensionAttribute
+    public class MarginAttribute : StyleExtensionAttribute
     {
         private readonly bool _parent;
         private readonly Vector4 _margin;

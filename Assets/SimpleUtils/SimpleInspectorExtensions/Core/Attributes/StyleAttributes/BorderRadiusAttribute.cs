@@ -7,7 +7,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class BorderRadiusAttribute : BaseExtensionAttribute
+    public class BorderRadiusAttribute : StyleExtensionAttribute
     {
         private readonly int _radius;
         private readonly bool _parent;

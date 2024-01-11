@@ -10,7 +10,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class SliderAttribute : BaseExtensionAttribute
+    public class SliderAttribute : CreationAttribute
     {
         private readonly float _minValue;
         private readonly float _maxValue;

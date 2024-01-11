@@ -8,7 +8,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class HorizontalLineAttribute : BaseExtensionAttribute
+    public class HorizontalLineAttribute : CreationAttribute
     {
         private readonly int _width;
         private readonly int _spaceWidth;

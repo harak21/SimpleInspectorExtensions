@@ -30,10 +30,9 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.Utility
             return listView;
         }
 
-        public static TField CreateField<TField, TFieldValue>(MemberData memberData, Object target) 
+        public static TField CreateField<TField, TFieldValue>(string fieldName, Object target) 
             where TField : BaseField<TFieldValue>, new()
         {
-            var fieldName = memberData.MemberInfo.Name;
             var field = CreateBaseField<TField, TFieldValue>(fieldName);
             field.SetValueWithoutNotify(ReflectionUtility.GetMemberValue<TFieldValue>(target, fieldName));
             field.RegisterValueChangedCallback(evt =>
@@ -43,9 +42,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.Utility
             return field;
         }
 
-        public static TextField CreateCharField(MemberData memberData, Object target)
+        public static TextField CreateCharField(string fieldName, Object target)
         {
-            var fieldName = memberData.MemberInfo.Name;
             var field = CreateBaseField<TextField, string>(fieldName);
             field.maxLength = 1;
             field.SetValueWithoutNotify(ReflectionUtility.GetMemberValue<char>(target, fieldName).ToString());
@@ -56,9 +54,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.Utility
             return field;
         }
 
-        public static LayerMaskField CreateLayerMask(MemberData memberData, Object target)
+        public static LayerMaskField CreateLayerMask(string fieldName, Object target)
         {
-            var fieldName = memberData.MemberInfo.Name;
             var field = CreateBaseField<LayerMaskField, int>(fieldName);
             field.SetValueWithoutNotify(ReflectionUtility.GetMemberValue<LayerMask>(target, fieldName));
             field.RegisterValueChangedCallback(evt =>
@@ -68,9 +65,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.Utility
             return field;
         }
 
-        public static EnumField CreateEnumField(MemberData memberData, Object target)
+        public static EnumField CreateEnumField(string fieldName, Object target)
         {
-            var fieldName = memberData.MemberInfo.Name;
             var field = CreateBaseField<EnumField, Enum>(fieldName);
             field.Init(ReflectionUtility.GetMemberValue<Enum>(target, fieldName));
             field.RegisterValueChangedCallback(evt =>
@@ -80,11 +76,10 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.Utility
             return field;
         }
 
-        public static ObjectField CreateObjectField(MemberData memberData, Object target)
+        public static ObjectField CreateObjectField(string fieldName, Type objectType, Object target)
         {
-            var fieldName = memberData.MemberInfo.Name;
             var field = CreateBaseField<ObjectField, Object>(fieldName);
-            field.objectType = ((FieldInfo)memberData.MemberInfo).FieldType;
+            field.objectType = objectType;
             field.SetValueWithoutNotify(ReflectionUtility.GetMemberValue<Object>(target, fieldName));
             field.RegisterValueChangedCallback(evt =>
             {

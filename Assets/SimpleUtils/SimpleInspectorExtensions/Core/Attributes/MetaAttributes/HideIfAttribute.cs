@@ -5,7 +5,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
-namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttributes
+namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.MetaAttributes
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
@@ -19,9 +19,11 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
             _condition = condition;
         }
 
+        public override int Order => 5;
+
         public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
         {
-            var condition = ReflectionUtility.GetMemberValue<bool>(target, memberElement.name);
+            var condition = ReflectionUtility.GetMemberValue<bool>(target, _condition);
 
             memberElement.style.display = condition 
                 ? new StyleEnum<DisplayStyle>(DisplayStyle.None) 

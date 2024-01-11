@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -30,9 +31,9 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Utility
             return value;
         }
 
-        public static void SetMemberValue(object target, object value, string memberName)
+        public static void SetMemberValue(object target, object value, string memberName, bool skipDirtyFlag = false)
         {
-            var member = GetMember(target, memberName);
+            var member = GetMember(target, memberName); 
 
             if (member is null)
             {
@@ -55,7 +56,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Utility
                 propertyInfo.SetValue(target, value);
             }
 
-            if (target is Object o)
+            if (target is Object o && !skipDirtyFlag)
             {
                 EditorUtility.SetDirty(o);
             }
@@ -78,11 +79,18 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Utility
             }
         }
 
-        private static MemberInfo GetMember(object target, string memberName)
+        public static MemberInfo GetMember(object target, string memberName)
         {
             return target.GetType().GetMember(memberName,
                 BindingFlags.Instance | BindingFlags.Static
                                       | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly).FirstOrDefault();
+        }
+
+        public static List<MemberInfo> GetMembers(object target)
+        {
+            return target.GetType().GetMembers(BindingFlags.Instance | BindingFlags.Static
+                | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                .Where(m => m.MemberType is MemberTypes.Field or MemberTypes.Property or MemberTypes.NestedType or MemberTypes.Method).ToList();
         }
     }
 }

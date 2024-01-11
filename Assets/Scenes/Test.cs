@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using SimpleUtils.SimpleInspectorExtensions.Core.Attributes;
 using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttributes;
+using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.MetaAttributes;
 using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttributes;
 using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes;
 using UnityEngine;
@@ -15,13 +16,13 @@ namespace Scenes
         private List<string> choices = new List<string>() { "a", "b" };
         
         
-        [BoxGroup("sadds"), BackgroundColor(InspectorColor.Red), Padding(25)] public bool notHide;
+        [BoxGroup("sadds"), Padding(25), HideIf(nameof(hide))] public bool hiddenElement;
         [BorderWidth(2), BorderColor(InspectorColor.Black), BorderRadius(4), Margin(0,0,0,3)] public bool hide;
 
         [LabelColor(InspectorColor.Gold)] public List<GameObject> List;
-        [BoxGroup("sfs", InspectorColor.Black, InspectorColor.Red), LabelColor(InspectorColor.Gold)] public NestedTest nestedTest;
+        [BoxGroup("sfs"), LabelColor(InspectorColor.Gold)] public NestedTest nestedTest;
 
-        [BoxGroup("box", margin: 15, padding:15, borderWidth: 1, borderColor: InspectorColor.Brown, borderRadius:3)] public Vector3 vector3;
+        [BoxGroup("box")] public Vector3 vector3; 
         
         [Button("Invoke me")]
         private void ButtonTest()
@@ -29,9 +30,9 @@ namespace Scenes
             Debug.Log("Invoked");
         }
 
-        [SerializeField][BoxGroup("Elements test", InspectorColor.Palegreen), LabelColor(InspectorColor.Black), HideInInspector] private string s = "hiddenStr";
-        [SerializeField][BoxGroup("Elements test"),StyleSheet("TestStyleSheet", true)] private Color _color;
-        [SerializeField][BoxGroup("Elements test")] private LayerMask _layerMask;
+        [SerializeField][BoxGroup("Elements test")] private string s = "hiddenStr";
+        [SerializeField][BoxGroup("Elements test")] private Color _color;
+        [SerializeField][BoxGroup("Elements test"), Order(1000, true)] private LayerMask _layerMask;
         [SerializeField][BoxGroup("Elements test")] private EnumA _enumA;
         [SerializeField][BoxGroup("Elements test")] private EnumB _enumB;
         [SerializeField][BoxGroup("Elements test")] private Vector2 _vector2;
@@ -48,16 +49,37 @@ namespace Scenes
         [SerializeField][BoxGroup("Elements test")] private BoundsInt _boundsInt;
         [SerializeField][BoxGroup("Elements test")] private GameObject _gameObject;
         [SerializeField][BoxGroup("Elements test")] private Transform _transform;
-        [SerializeField][BoxGroup("Elements test")]
-        [BorderRadius(5, true), Margin(5, true), BorderColor(InspectorColor.Gold, true)]private List<Transform> _list;
+        [SerializeField][BoxGroup("Elements test")] private List<Transform> _list;
         
-        [LabelColor(InspectorColor.Black), Slider(1,15), Foldout("Slider")] private float _slider;
-        [LabelColor(InspectorColor.Black), MinMaxSlider(0,100), Foldout("Slider")] private Vector2 _minMaxSlider;
-        [LabelColor(InspectorColor.Black), ProgressBar, Foldout("Slider")] private float _bar = 35f;
+        [Slider(1,15), Foldout("Slider")] private float _slider;
+        [MinMaxSlider(0,100), Foldout("Slider")] private Vector2 _minMaxSlider;
+        [ProgressBar, Foldout("Slider")] private float _bar = 35f;
 
         [RadioButtonGroup("rbg")] private bool _a;
         [RadioButtonGroup("rbg")] private bool _b;
         [RadioButtonGroup("rbg")] private bool _c;
+
+        [OnValueChanged(nameof(OnValueChanged))]
+        public int value;
+
+        private void OnValueChanged(int i)
+        {
+            Debug.Log(i);
+        }
+
+        [OnValueChanged(nameof(OnGoChanged))]
+        public GameObject go;
+
+        private void OnGoChanged(GameObject g)
+        {
+            Debug.Log(g);
+        }
+
+        [AnimatorParameters]
+        private string animator;
+
+        [OnValueChanged(nameof(OnGoChanged))]
+        public List<GameObject> targetList = new();
     }
 
     public enum EnumA

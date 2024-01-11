@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -13,22 +12,31 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
         public static IEnumerable<ComponentInfo> Gather()
         {
             var memberData = new List<MemberData>();
+            var attributesData = new List<AttributeData>();
 
-            foreach (var type in TypeCache.GetTypesDerivedFrom<Object>())       
+            foreach (var type in TypeCache.GetTypesDerivedFrom<UnityEngine.Object>())       
             {
                 if (type.IsAbstract || type.IsGenericTypeDefinition || type.IsGenericType)
                     continue;
 
-                foreach (var memberInfo in type.GetMembers(BindingFlags.Instance
-                                                           | BindingFlags.Public | BindingFlags.NonPublic))
+                var members = type.GetMembers(BindingFlags.Instance
+                                                  | BindingFlags.Public | BindingFlags.NonPublic);
+                for (var i = 0; i < members.Length;i++)
                 {
+                    var memberInfo = members[i];
                     var customAttributes = memberInfo.GetCustomAttributes<BaseExtensionAttribute>().ToArray();
-                    if (customAttributes.Length == 0) 
+                    if (customAttributes.Length == 0)
                         continue;
-                    
+
+                    foreach (var customAttribute in customAttributes)
+                    {
+                        var attributeData = new AttributeData(customAttribute, memberInfo, i);
+                        attributesData.Add(attributeData);
+                    }
+
                     var data = new MemberData(memberInfo)
                     {
-                        Attributes = customAttributes
+                        Attributes = customAttributes 
                     };
                     memberData.Add(data);
                 }
@@ -36,7 +44,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
                 if (memberData.Count <= 0)
                     continue;
 
-                var componentInfo = new ComponentInfo(type, memberData.ToArray());
+                attributesData.Sort();
+                var componentInfo = new ComponentInfo(type, memberData.ToArray(), attributesData.ToArray());
                 yield return componentInfo;
                 
                 memberData.Clear();

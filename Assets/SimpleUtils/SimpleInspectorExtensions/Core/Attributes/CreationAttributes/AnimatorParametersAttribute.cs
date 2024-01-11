@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
+using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
@@ -9,33 +10,37 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     [Conditional("UNITY_EDITOR")]
-    public class DropdownAttribute : CreationAttribute
+    public class AnimatorParametersAttribute : CreationAttribute
     {
-        private readonly string _choicesSource;
-
-        public DropdownAttribute(string choicesSource)
-        {
-            _choicesSource = choicesSource;
-        }
-        
         public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
         {
-            memberElement.parent.Remove(memberElement);
+            if (target is not Component gameObject)
+                return;
 
-            var choices = ReflectionUtility.GetMemberValue<List<string>>(target, _choicesSource);
+            List<string> choices = new();
+            var animator = gameObject.GetComponent<Animator>();
+            foreach (var parameter in animator.parameters)
+            {
+                choices.Add(parameter.name);
+            }
 
+            var parent = memberElement.parent;
+            var indexOf = parent.IndexOf(memberElement);
+            parent.Remove(memberElement);
             var dropdown = new DropdownField
             {
+                name = memberElement.name,
+                label = memberElement.name,
                 choices = choices
             };
-            
             dropdown.SetValueWithoutNotify(ReflectionUtility.GetMemberValue<string>(target, memberElement.name));
+
             dropdown.RegisterValueChangedCallback(evt =>
             {
                 ReflectionUtility.SetMemberValue(target, evt.newValue, memberElement.name);
             });
             
-            rootElement.Add(dropdown);
+            parent.Insert(indexOf, dropdown);
         }
     }
 }

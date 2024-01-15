@@ -33,7 +33,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
         {
             GUIBuilder.AddInspectedType(componentInfo);
             //sb.AppendLine("DrawDefaultInspector();");
-            sb.AppendLine("return SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder.GUIBuilder.CreateInspectorGUI(serializedObject, this);");
+            sb.AppendLine("return SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder.GUIBuilder.CreateInspectorGUI(serializedObject);");
         }
     }
 }

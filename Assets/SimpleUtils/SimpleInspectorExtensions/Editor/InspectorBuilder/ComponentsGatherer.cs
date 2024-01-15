@@ -11,7 +11,6 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
     {
         public static IEnumerable<ComponentInfo> Gather()
         {
-            var memberData = new List<MemberData>();
             var attributesData = new List<AttributeData>();
 
             foreach (var type in TypeCache.GetTypesDerivedFrom<UnityEngine.Object>())       
@@ -33,22 +32,15 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
                         var attributeData = new AttributeData(customAttribute, memberInfo, i);
                         attributesData.Add(attributeData);
                     }
-
-                    var data = new MemberData(memberInfo)
-                    {
-                        Attributes = customAttributes 
-                    };
-                    memberData.Add(data);
                 }
 
-                if (memberData.Count <= 0)
+                if (attributesData.Count <= 0)
                     continue;
 
                 attributesData.Sort();
-                var componentInfo = new ComponentInfo(type, memberData.ToArray(), attributesData.ToArray());
+                var componentInfo = new ComponentInfo(type, attributesData.ToArray());
+                attributesData.Clear();
                 yield return componentInfo;
-                
-                memberData.Clear();
             }
         }
     }

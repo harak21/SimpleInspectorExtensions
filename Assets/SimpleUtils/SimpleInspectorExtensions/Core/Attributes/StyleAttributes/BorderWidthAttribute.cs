@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
@@ -23,7 +24,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
             _borderWidth = new Vector4(top, bottom, left, right);
         }
         
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
             var targetElement = _parent ? memberElement.parent : memberElement;
             targetElement.style.borderTopWidth = _borderWidth.x;

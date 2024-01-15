@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
@@ -17,7 +18,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
             _name = name;
         }
 
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
             var button = rootElement.Q<Button>(memberElement.name);
             button.text = _name;

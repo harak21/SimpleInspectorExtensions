@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
@@ -21,7 +22,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
             _lineColor = lineColor;
         }
         
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
             var indexOf = memberElement.parent.IndexOf(memberElement);
             var ve = new VisualElement()

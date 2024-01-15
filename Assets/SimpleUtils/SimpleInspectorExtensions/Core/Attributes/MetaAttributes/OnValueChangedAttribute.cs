@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
-using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -18,13 +18,15 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.MetaAttributes
         public override int Order => 5;
 
         private readonly string _callback;
+        private object _target;
 
         public OnValueChangedAttribute(string callback)
         {
             _callback = callback;
         }
 
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
             var field = (FieldInfo)ReflectionUtility.GetMember(target, memberElement.name);
             var method = (MethodInfo)ReflectionUtility.GetMember(target, _callback);
@@ -34,81 +36,84 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.MetaAttributes
 
             var parameterInfos = method.GetParameters();
 
-            if (field.FieldType.IsGenericType)
+            if (typeof(IEnumerable).IsAssignableFrom(field.FieldType) && field.FieldType != typeof(string))
             {
-                var generic = field.FieldType.GetGenericArguments();
-                if (parameterInfos.Length != generic.Length)
-                {
-                    Debug.LogError("The callback method must accept a field type argument");
-                    return;
-                }
-
-                for (int i = 0; i < parameterInfos.Length; i++)
-                {
-                    if (parameterInfos[i].ParameterType != generic[i])
-                    {
-                        Debug.LogError("The callback method must accept a field type argument");
-                        return;
-                    }
-                }
+                HandleCollectionTypeField(parameterInfos, memberElement, target);
+                return;
             }
-            else
+
+            HandleNonCollectionField(target, memberElement, parameterInfos, field);
+        }
+
+        private void HandleCollectionTypeField(ParameterInfo[] parameterInfos, VisualElement memberElement,
+            Object target)
+        {
+            if (parameterInfos.Length != 0)
             {
-                if (parameterInfos.Length != 1 || parameterInfos[0].ParameterType != field.FieldType)
-                {
-                    Debug.LogError("The callback method must accept a field type argument");
-                    return;
-                }
-                
+                Debug.LogError("For collections callback should not contain input parameters ");
+                return;
             }
             
-
-            if (memberElement is PropertyField propertyField)
+            switch (memberElement)
             {
-                propertyField.RegisterValueChangeCallback(evt =>
-                {
-                    var value = ReflectionUtility.GetMemberValue<object>(target, memberElement.name);
-                    ReflectionUtility.SetMemberValue(target, value, _callback, true); 
-                });
+                case PropertyField propertyField:
+                    propertyField.schedule.Execute((Action)(() =>
+                    {
+                        var listProperty = propertyField.Q<ListView>();
+                        listProperty.itemsAdded += ints =>
+                        {
+                            ReflectionUtility.InvokeMethod(target,_callback);
+                        };
+                        listProperty.itemsRemoved += ints =>
+                        {
+                            ReflectionUtility.InvokeMethod(target,_callback);
+                        };
+                    })).ExecuteLater(1000L);
+                    break;
+                case ListView listView:
+                    listView.itemsAdded += ints =>
+                    {
+                        ReflectionUtility.InvokeMethod(target,_callback);
+                    };
+                    listView.itemsRemoved += ints =>
+                    {
+                        ReflectionUtility.InvokeMethod(target,_callback);
+                    };
+                    break;
+            }
+        }
+
+        private void HandleNonCollectionField(Object target, VisualElement memberElement, ParameterInfo[] parameterInfos,
+            FieldInfo field)
+        {
+            if (parameterInfos.Length != 1 || parameterInfos[0].ParameterType != field.FieldType)
+            {
+                Debug.LogError("The callback method must accept a field type argument");
                 return;
             }
 
-            RegisterCallbacks(memberElement, target);
+            _target = target;
+            var genericType = typeof(Object).IsAssignableFrom(field.FieldType) ? typeof(Object) : field.FieldType;
+            var changeEventType = typeof(ChangeEvent<>).MakeGenericType(genericType);
+            var eventCallbackType = typeof(EventCallback<>).MakeGenericType(changeEventType);
+            var callbackMethodInfo = GetType()
+                .GetMethod(nameof(Callback),
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!
+                .MakeGenericMethod(genericType);
+            var del = Delegate.CreateDelegate(eventCallbackType, this, callbackMethodInfo);
+            var eventHandlerMethod = typeof(CallbackEventHandler)
+                .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .First(m => m.Name == "RegisterCallback" && m.GetGenericArguments().Length == 1)
+                .MakeGenericMethod(changeEventType);
+            eventHandlerMethod.Invoke(memberElement, new object[] { del, TrickleDown.NoTrickleDown });
         }
 
-        private void RegisterCallbacks(CallbackEventHandler memberElement, Object target)
+        public void Callback<T>(ChangeEvent<T> changeEvent)
         {
-            memberElement.RegisterCallback<ChangeEvent<SerializedProperty>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<int>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<bool>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<float>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<double>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<string>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Color>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Object>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Enum>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Vector2>> (changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Vector3>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Vector4>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Rect>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<AnimationCurve>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Bounds>> (changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Gradient>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Quaternion>> (changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Vector2Int>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Vector3Int>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Vector3Int>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<RectInt>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<BoundsInt>>(changeEvent => OnValueChanged(changeEvent, target));
-            memberElement.RegisterCallback<ChangeEvent<Hash128>>(changeEvent => OnValueChanged(changeEvent, target));
-        }
-
-        private void OnValueChanged<T>(ChangeEvent<T> changeEvent, Object target)
-        {
-            var methodInfo = (MethodInfo)ReflectionUtility.GetMember(target, _callback);
+            var methodInfo = (MethodInfo)ReflectionUtility.GetMember(_target, _callback);
             if (!typeof(T).IsAssignableFrom(methodInfo.GetParameters()[0].ParameterType))
                 return;
-            ReflectionUtility.SetMemberValue(target, changeEvent.newValue, _callback);
+            ReflectionUtility.SetMemberValue(_target, changeEvent.newValue, _callback);
         }
     }
 }

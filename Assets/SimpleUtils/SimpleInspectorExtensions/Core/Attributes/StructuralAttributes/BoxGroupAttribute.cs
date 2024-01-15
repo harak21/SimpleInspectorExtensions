@@ -1,11 +1,12 @@
 using System;
 using System.Diagnostics;
+using System.Reflection;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttributes
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method)]
     [Conditional("UNITY_EDITOR")]
     public class BoxGroupAttribute : StructuralAttribute
     {
@@ -17,8 +18,18 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
         }
 
 
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
+            if (memberElement is null)
+            {
+                memberElement = rootElement.Q<Button>(memberInfo.Name);
+                if (memberElement is null)
+                {
+                    return;
+                }
+            }
+
             var group = rootElement.Q<Box>(_name);
 
             bool hasLabel = !string.IsNullOrEmpty(_name);

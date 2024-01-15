@@ -10,7 +10,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Editor.InspectorBuilder
 {
     internal static class Builder
     {
-        [InitializeOnLoadMethod]
+        [InitializeOnLoadMethod] 
         private static void Init()
         {
             InitUnityEditorSystem();

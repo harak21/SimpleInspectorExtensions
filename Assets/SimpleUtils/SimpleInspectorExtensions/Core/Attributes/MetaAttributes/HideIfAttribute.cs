@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -21,7 +22,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.MetaAttributes
 
         public override int Order => 5;
 
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
             var condition = ReflectionUtility.GetMemberValue<bool>(target, _condition);
 

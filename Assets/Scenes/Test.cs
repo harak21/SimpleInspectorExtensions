@@ -5,12 +5,29 @@ using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttributes;
 using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.MetaAttributes;
 using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttributes;
 using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes;
+using SimpleUtils.SimpleInspectorExtensions.Core.Attributes.ValidationAttributes;
 using UnityEngine;
 
 namespace Scenes
 {
     public class Test : MonoBehaviour
     {
+        private void Awake()
+        {
+            listView.Add(this.gameObject);
+        }
+
+        [BoxGroup("ListView")]
+        public List<GameObject> listView = new List<GameObject>();
+        
+        [Tag]
+        private string Tag;
+
+        [Layer, Label("NewLayerName")] private int Layer;
+
+        [MaxValue(14), MinValue(10.3)] public int dou;
+        
+        
         [Dropdown("choices"), SerializeField] public string Fooo;
 
         private List<string> choices = new List<string>() { "a", "b" };
@@ -19,18 +36,18 @@ namespace Scenes
         [BoxGroup("sadds"), Padding(25), HideIf(nameof(hide))] public bool hiddenElement;
         [BorderWidth(2), BorderColor(InspectorColor.Black), BorderRadius(4), Margin(0,0,0,3)] public bool hide;
 
-        [LabelColor(InspectorColor.Gold)] public List<GameObject> List;
-        [BoxGroup("sfs"), LabelColor(InspectorColor.Gold)] public NestedTest nestedTest;
+        [TextColor(InspectorColor.Gold)] public List<GameObject> List;
+        [BoxGroup("sfs"), TextColor(InspectorColor.Gold)] public NestedTest nestedTest;
 
         [BoxGroup("box")] public Vector3 vector3; 
         
-        [Button("Invoke me")]
+        [BoxGroup("Elements test"), Button("Invoke me")]
         private void ButtonTest()
         {
             Debug.Log("Invoked");
         }
 
-        [SerializeField][BoxGroup("Elements test")] private string s = "hiddenStr";
+        [BoxGroup("Elements test"), MultilineField, InspectorTooltip("string a")] private string s = "hiddenStr";
         [SerializeField][BoxGroup("Elements test")] private Color _color;
         [SerializeField][BoxGroup("Elements test"), Order(1000, true)] private LayerMask _layerMask;
         [SerializeField][BoxGroup("Elements test")] private EnumA _enumA;
@@ -67,19 +84,24 @@ namespace Scenes
             Debug.Log(i);
         }
 
-        [OnValueChanged(nameof(OnGoChanged))]
-        public GameObject go;
-
-        private void OnGoChanged(GameObject g)
+        private void OnGoChanged()
         {
-            Debug.Log(g);
+            Debug.Log("Collection was changed");
         }
 
         [AnimatorParameters]
         private string animator;
 
         [OnValueChanged(nameof(OnGoChanged))]
-        public List<GameObject> targetList = new();
+        private List<GameObject> targetList = new();
+
+        [CustomAdd(nameof(Add))]
+        private List<NestedTest> nestedList = new();
+
+        private NestedTest Add()
+        {
+            return new NestedTest() { integer = 42, sdasd = "text example" };
+        }
     }
 
     public enum EnumA

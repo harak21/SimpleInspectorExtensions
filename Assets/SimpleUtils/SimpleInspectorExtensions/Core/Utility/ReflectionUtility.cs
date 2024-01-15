@@ -16,7 +16,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Utility
             
             if (member is null)
             {
-                Debug.LogError($"Class member named {memberName} was not found");
+                Debug.LogError($"Member named {memberName} was not found");
                 return default;
             }
 
@@ -35,25 +35,20 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Utility
         {
             var member = GetMember(target, memberName); 
 
-            if (member is null)
+            switch (member)
             {
-                Debug.LogError($"Class member named {memberName} was not found");
-                return;
-            }
-
-            if (member is MethodInfo methodInfo)
-            {
-                methodInfo.Invoke(target, new[] { value });
-            }
-
-            if (member is FieldInfo fieldInfo)
-            {
-                fieldInfo.SetValue(target, value);
-            }
-
-            if (member is PropertyInfo propertyInfo)
-            {
-                propertyInfo.SetValue(target, value);
+                case null:
+                    Debug.LogError($"Member named {memberName} was not found");
+                    return;
+                case MethodInfo methodInfo:
+                    methodInfo.Invoke(target, new[] { value });
+                    break;
+                case FieldInfo fieldInfo:
+                    fieldInfo.SetValue(target, value);
+                    break;
+                case PropertyInfo propertyInfo:
+                    propertyInfo.SetValue(target, value);
+                    break;
             }
 
             if (target is Object o && !skipDirtyFlag)
@@ -63,34 +58,64 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Utility
             
         }
 
-        public static void InvokeMethod(object target, string methodName)
+        public static object InvokeMethod(object target, string methodName)
         {
             var member = GetMember(target, methodName);
             
-            if (member is null)
+            switch (member)
             {
-                Debug.LogError($"Class member named {methodName} was not found");
-                return;
+                case null:
+                    Debug.LogError($"Class member named {methodName} was not found");
+                    return null;
+                case MethodInfo methodInfo:
+                    return methodInfo.Invoke(target, Array.Empty<object>());
             }
 
-            if (member is MethodInfo methodInfo)
-            {
-                methodInfo.Invoke(target, Array.Empty<object>());
-            }
+            return null;
         }
 
         public static MemberInfo GetMember(object target, string memberName)
         {
             return target.GetType().GetMember(memberName,
                 BindingFlags.Instance | BindingFlags.Static
-                                      | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly).FirstOrDefault();
+                                      | BindingFlags.NonPublic | BindingFlags.Public).FirstOrDefault();
         }
 
         public static List<MemberInfo> GetMembers(object target)
         {
-            return target.GetType().GetMembers(BindingFlags.Instance | BindingFlags.Static
-                | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly)
+            return GetMembers(target.GetType());
+        }
+
+        public static List<MemberInfo> GetMembers(Type type)
+        {
+            return type.GetMembers(BindingFlags.Instance | BindingFlags.Static
+                                                         | BindingFlags.NonPublic | BindingFlags.Public)
                 .Where(m => m.MemberType is MemberTypes.Field or MemberTypes.Property or MemberTypes.NestedType or MemberTypes.Method).ToList();
+        }
+
+        public static List<MemberInfo> GetPublicFieldsAndProperties(Type type)
+        {
+            return type.GetMembers(BindingFlags.Instance | BindingFlags.Public)
+                .Where(m => m.MemberType is MemberTypes.Field or MemberTypes.Property).ToList();
+        }
+
+        public static Type GetMemberType(object target, string memberName)
+        {
+            var member = GetMember(target, memberName);
+            return GetMemberType(member);
+        }
+        
+        public static Type GetMemberType(MemberInfo member)
+        {
+            switch (member)
+            {
+                case FieldInfo fieldInfo:
+                    return fieldInfo.FieldType;
+                case PropertyInfo propertyInfo:
+                    return propertyInfo.PropertyType;
+                default:
+                    return typeof(object);
+            }
         }
     }
 }

@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
+using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
@@ -20,10 +22,12 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
             _name = name;
         }
         
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
-            if (memberElement is not Toggle toggle)
+            if (ReflectionUtility.GetMemberType(memberInfo) != typeof(bool))
                 return;
+            
             var label = Regex.Replace(memberElement.name.TrimStart('_'), "^[a-z]", c => c.Value.ToUpper());
 
             var parent = memberElement.parent;
@@ -31,9 +35,11 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
             parent.Remove(memberElement);
 
             var radioButtonGroup = rootElement.Q<RadioButtonGroup>(_name);
+            var value = ReflectionUtility.GetMemberValue<bool>(target, memberInfo.Name);
+
             if (radioButtonGroup == null)
             {
-                CreateGroup(target, memberElement, parent, indexOf, label, toggle);
+                CreateGroup(target, memberElement, parent, indexOf, label, value);
             }
             else
             {
@@ -43,7 +49,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
                 var userData = (List<string>)radioButtonGroup.userData;
                 userData.Add(memberElement.name);
             
-                if (toggle.value)
+                if (value)
                 {
                     radioButtonGroup.SetValueWithoutNotify(choices.IndexOf(label));
                 }
@@ -51,7 +57,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
             
         }
 
-        private void CreateGroup(Object target, VisualElement memberElement,VisualElement parent,int indexOf, string label, Toggle toggle)
+        private void CreateGroup(Object target, VisualElement memberElement,VisualElement parent,int indexOf, string label, bool setTrue)
         {
             var radioButtonGroup = new RadioButtonGroup
             {
@@ -71,7 +77,7 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
             radioButtonGroup.choices = new List<string>() { label };
             radioButtonGroup.userData = new List<string>() { memberElement.name };
 
-            if (toggle.value)
+            if (setTrue)
             {
                 radioButtonGroup.SetValueWithoutNotify(0);
             }

@@ -2,6 +2,6 @@
 {
     public abstract class CreationAttribute : BaseExtensionAttribute
     {
-        public override int Order => 2;
+        public override int Order => 0;
     }
 }

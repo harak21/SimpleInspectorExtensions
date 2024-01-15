@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttributes
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method)]
     [Conditional("UNITY_EDITOR")]
     public class FoldoutAttribute : StructuralAttribute
     {
@@ -16,8 +17,12 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StructuralAttrib
             _name = name;
         }
         
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
+            if (memberElement is null)
+                return;
+            
             var group = rootElement.Q<Foldout>(_name);
 
             if (group == null)

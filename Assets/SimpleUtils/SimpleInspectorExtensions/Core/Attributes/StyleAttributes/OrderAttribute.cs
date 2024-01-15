@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Reflection;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
@@ -14,7 +15,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.StyleAttributes
             _parent = parent;
         }
         
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
             VisualElement parent;
             VisualElement targetElement;

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
+using System.Reflection;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
@@ -26,9 +25,10 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
             _maxValueRange = 0;
         }
         
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
-            if (memberElement is not Vector2Field vector2Field)
+            if (ReflectionUtility.GetMemberType(memberInfo) != typeof(Vector2))
                 return;
 
             var parent = memberElement.parent;
@@ -37,16 +37,14 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
 
             var minMaxSlider = new MinMaxSlider()
             {
-                name = memberElement.name,
-                label = Regex.Replace(memberElement.name.TrimStart('_'), "^[a-z]", c => c.Value.ToUpper()),
+                name = memberInfo.Name,
+                label = GetFormattedName(memberInfo.Name),
                 lowLimit = _min,
                 highLimit = _max,
                 minValue = _minValueRange,
                 maxValue = _maxValueRange
             };
             minMaxSlider.SetValueWithoutNotify(ReflectionUtility.GetMemberValue<Vector2>(target, memberElement.name));
-            //minMaxSlider.minValue = _minValueRange;
-            //minMaxSlider.maxValue = _maxValueRange;
             minMaxSlider.RegisterValueChangedCallback(evt =>
             {
                 ReflectionUtility.SetMemberValue(target, evt.newValue, memberElement.name);

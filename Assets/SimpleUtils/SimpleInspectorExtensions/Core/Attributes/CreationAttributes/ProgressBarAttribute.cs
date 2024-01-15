@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEditor.UIElements;
@@ -23,10 +24,12 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
             _max = max;
         }
         
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
-            if (memberElement is not FloatField floatField)
+            if (ReflectionUtility.GetMemberType(memberInfo) != typeof(float))
                 return;
+            
 
             var ve = new VisualElement
             {
@@ -42,27 +45,38 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
 
             var progressBar = new ProgressBar()
             {
-                name = memberElement.name,
-                title = Regex.Replace(memberElement.name.TrimStart('_'), "^[a-z]", c => c.Value.ToUpper()),
+                name = memberInfo.Name,
+                title = GetFormattedName(memberInfo.Name),
                 lowValue = _min,
                 highValue = _max
             };
             progressBar.SetValueWithoutNotify(ReflectionUtility.GetMemberValue<float>(target, memberElement.name));
-            floatField.RegisterValueChangedCallback(evt =>
-            {
-                var value = Mathf.Clamp(evt.newValue, _min, _max);
-                floatField.SetValueWithoutNotify(value);
-                ReflectionUtility.SetMemberValue(target, value, memberElement.name);
-                progressBar.SetValueWithoutNotify(value);
-            });
-            //floatField.style.maxWidth = 200;
-            //floatField.style.minWidth = 200;
             progressBar.style.overflow = new StyleEnum<Overflow>(Overflow.Hidden);
             progressBar.style.flexGrow = 1;
 
-            //floatField.label = "";
             ve.Add(progressBar);
-            ve.Add(floatField);
+            switch (memberElement)
+            {
+                case FloatField floatField:
+                    floatField.RegisterValueChangedCallback(evt =>
+                    {
+                        var value = Mathf.Clamp(evt.newValue, _min, _max);
+                        floatField.SetValueWithoutNotify(value);
+                        ReflectionUtility.SetMemberValue(target, value, memberElement.name);
+                        progressBar.SetValueWithoutNotify(value);
+                    });
+                    ve.Add(floatField);
+                    break;
+                case PropertyField propertyField:
+                    propertyField.RegisterValueChangeCallback(evt =>
+                    {
+                        var value = Mathf.Clamp(evt.changedProperty.floatValue, _min, _max);
+                        ReflectionUtility.SetMemberValue(target, value, memberElement.name);
+                        progressBar.SetValueWithoutNotify(value);
+                    });
+                    ve.Add(propertyField);
+                    break;
+            }
             parent.Insert(indexOf, ve);
         }
     }

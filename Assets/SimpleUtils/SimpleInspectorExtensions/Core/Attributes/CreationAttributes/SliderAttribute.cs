@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
+using System.Reflection;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
-using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
@@ -18,12 +17,13 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
         public SliderAttribute(float minValue = 0f, float maxValue = 100f)
         {
             _minValue = minValue;
-            _maxValue = maxValue;
+            _maxValue = maxValue; 
         }
         
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
-            if (memberElement is not FloatField)
+            if (ReflectionUtility.GetMemberType(memberInfo) != typeof(float))
                 return;
 
             var parent = memberElement.parent;
@@ -32,8 +32,8 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
 
             var slider = new Slider
             {
-                name = memberElement.name,
-                label = Regex.Replace(memberElement.name.TrimStart('_'), "^[a-z]", c => c.Value.ToUpper()),
+                name = memberInfo.Name,
+                label = GetFormattedName(memberInfo.Name),
                 lowValue = _minValue,
                 highValue = _maxValue
             };

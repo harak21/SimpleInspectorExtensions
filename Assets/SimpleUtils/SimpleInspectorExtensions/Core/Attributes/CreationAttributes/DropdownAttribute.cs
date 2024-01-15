@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
@@ -18,8 +19,12 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
             _choicesSource = choicesSource;
         }
         
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement,
+            MemberInfo memberInfo)
         {
+            if (ReflectionUtility.GetMemberType(memberInfo) != typeof(string))
+                return;
+            
             memberElement.parent.Remove(memberElement);
 
             var choices = ReflectionUtility.GetMemberValue<List<string>>(target, _choicesSource);

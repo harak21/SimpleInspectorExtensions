@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using SimpleUtils.SimpleInspectorExtensions.Core.Utility;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -12,9 +13,13 @@ namespace SimpleUtils.SimpleInspectorExtensions.Core.Attributes.CreationAttribut
     [Conditional("UNITY_EDITOR")]
     public class AnimatorParametersAttribute : CreationAttribute
     {
-        public override void Execute(VisualElement rootElement, Object target, VisualElement memberElement)
+        public override void Execute(VisualElement rootElement, Object target,
+            VisualElement memberElement, MemberInfo memberInfo)
         {
             if (target is not Component gameObject)
+                return;
+
+            if (ReflectionUtility.GetMemberType(memberInfo) != typeof(string))
                 return;
 
             List<string> choices = new();
